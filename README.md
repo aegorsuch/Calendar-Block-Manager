@@ -1,4 +1,4 @@
-# Anchor and Link Event Sequence Manager 🗓️
+# Anchor and Link Event Manager 🗓️
 
 A Google Apps Script that transforms Google Calendar from a static grid into a **dynamic, relational schedule**. 
 
