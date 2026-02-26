@@ -1,4 +1,4 @@
-function syncRoutine() {
+function CalendarBlockManager() {
   const calendar = CalendarApp.getDefaultCalendar();
   const startSearch = new Date();
   startSearch.setHours(0,0,0,0); // Look from start of today
@@ -6,7 +6,7 @@ function syncRoutine() {
   const endSearch = new Date();
   endSearch.setDate(startSearch.getDate() + 7); // 7 days ahead
 
-  const routines = [
+  const routines = [ //change these as needed to match your anchor/link tags in your calendar events
     { anchorTag: '#morninganchor', linkTag: '#morninglink' },
     { anchorTag: '#commutehomeanchor', linkTag: '#commutehomelink' },
     { anchorTag: '#eveninganchor', linkTag: '#eveninglink' },
