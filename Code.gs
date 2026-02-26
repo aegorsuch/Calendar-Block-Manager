@@ -1,12 +1,17 @@
-function CalendarBlockManager() {
+/**
+ * Calendar Block Manager
+ * Status: Final stable version (Positioning only, no colors).
+ * Logic: Slides "link" events to touch the end of an "anchor" event.
+ */
+function calendarBlockManager() {
   const calendar = CalendarApp.getDefaultCalendar();
   const startSearch = new Date();
-  startSearch.setHours(0,0,0,0); // Look from start of today
+  startSearch.setHours(0,0,0,0); 
   
   const endSearch = new Date();
-  endSearch.setDate(startSearch.getDate() + 7); // 7 days ahead
+  endSearch.setDate(startSearch.getDate() + 7); 
 
-  const routines = [ //change these as needed to match your anchor/link tags in your calendar events
+  const routines = [ 
     { anchorTag: '#morninganchor', linkTag: '#morninglink' },
     { anchorTag: '#commutehomeanchor', linkTag: '#commutehomelink' },
     { anchorTag: '#eveninganchor', linkTag: '#eveninglink' },
@@ -33,11 +38,6 @@ function CalendarBlockManager() {
       });
 
       if (followers.length > 0) {
-        // Set Anchor Color (10 = Basil/Dark Green)
-        try {
-          if (anchor.getColor() !== "10") anchor.setColor("10");
-        } catch(e) { Logger.log("Could not color anchor"); }
-
         // Sort followers by their current start time to preserve your sequence
         followers.sort((a, b) => a.getStartTime() - b.getStartTime());
         
@@ -51,11 +51,6 @@ function CalendarBlockManager() {
           if (event.getStartTime().getTime() !== nextStartTime.getTime()) {
             event.setTime(nextStartTime, newEnd);
           }
-          
-          // Set Linked Color (2 = Sage/Pale Green)
-          try {
-            if (event.getColor() !== "2") event.setColor("2");
-          } catch(e) { Logger.log("Could not color follower"); }
           
           nextStartTime = newEnd; 
         });
