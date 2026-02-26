@@ -8,7 +8,7 @@ Traditional calendars are brittle. If your "Anchor" event (like a morning workou
 ### The Solution: "Train Logic"
 This script creates a physical relationship between an **Anchor** (the engine) and **Links** (the cars). When the engine moves, the cars follow automatically—maintaining their duration and sequence with zero gaps in between.
 
-[Image of a sequence diagram showing a calendar anchor event moving and following link events snapping to its end]
+
 
 ---
 
@@ -17,6 +17,7 @@ This script creates a physical relationship between an **Anchor** (the engine) a
 * **Smart Snap:** Automatically removes gaps and overlaps between related events.
 * **API Efficient:** Only moves events if the time has actually changed, preserving your Google API quota.
 * **Flexible Tagging:** Scans both **Titles** and **Descriptions** for hashtags.
+* **Native Look:** Uses your calendar's standard default colors for a clean, unified appearance.
 
 ---
 
@@ -24,7 +25,7 @@ This script creates a physical relationship between an **Anchor** (the engine) a
 
 1. Open [Google Apps Script](https://script.google.com/).
 2. Click **+ New Project** and paste the code from `Code.gs`.
-3. **Important:** Name the function `calendarBlockManager` (avoid using dashes `-` in the actual code function name to prevent syntax errors).
+3. **Important:** Ensure the function is named `calendarBlockManager` (avoid using dashes `-` in the function name).
 4. Click the **Triggers** (Clock icon) on the left sidebar.
 5. Add a new trigger:
     * **Function:** `calendarBlockManager`
@@ -38,4 +39,15 @@ This script creates a physical relationship between an **Anchor** (the engine) a
 
 Simply add these hashtags to your event titles or descriptions. The script handles the rest.
 
-| Routine | Anchor Tag (The Leader
+| Routine | Anchor Tag (The Leader) | Link Tag (The Followers) |
+| :--- | :--- | :--- |
+| **Morning** | `#morninganchor` | `#morninglink` |
+| **Commute** | `#commutehomeanchor` | `#commutehomelink` |
+| **Evening** | `#eveninganchor` | `#eveninglink` |
+
+> **Pro-Tip:** If you have multiple `#morninglink` events, the script will sort them based on their *original* start times and stack them neatly in that order behind the anchor.
+
+---
+
+## 📄 License
+Distributed under the MIT License.
