@@ -1,6 +1,6 @@
 /**
  * Calendar Block Manager
- * Status: Final stable version (Positioning only, no colors).
+ * Status: Final stable version (Shorthand tags).
  * Logic: Slides "link" events to touch the end of an "anchor" event.
  */
 function calendarBlockManager() {
@@ -12,9 +12,9 @@ function calendarBlockManager() {
   endSearch.setDate(startSearch.getDate() + 7); 
 
   const routines = [ 
-    { anchorTag: '#morninganchor', linkTag: '#morninglink' },
-    { anchorTag: '#commutehomeanchor', linkTag: '#commutehomelink' },
-    { anchorTag: '#eveninganchor', linkTag: '#eveninglink' },
+    { anchorTag: '#amanchor', linkTag: '#amlink' },
+    { anchorTag: '#commuteanchor', linkTag: '#commutelink' },
+    { anchorTag: '#pmanchor', linkTag: '#pmlink' },
   ];
 
   const allEvents = calendar.getEvents(startSearch, endSearch);
@@ -38,7 +38,7 @@ function calendarBlockManager() {
       });
 
       if (followers.length > 0) {
-        // Sort followers by their current start time to preserve your sequence
+        // Sort followers by their current start time to preserve sequence
         followers.sort((a, b) => a.getStartTime() - b.getStartTime());
         
         let nextStartTime = anchor.getEndTime();
@@ -47,7 +47,7 @@ function calendarBlockManager() {
           const duration = event.getEndTime() - event.getStartTime();
           const newEnd = new Date(nextStartTime.getTime() + duration);
           
-          // 3. Only move if the time is actually different to save API quota
+          // 3. Only move if the time is actually different
           if (event.getStartTime().getTime() !== nextStartTime.getTime()) {
             event.setTime(nextStartTime, newEnd);
           }
