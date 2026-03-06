@@ -128,9 +128,39 @@ npm test
     - After setup, every `git push` runs `npm run check:full` automatically.
 - One-command deploy from local
     - `npm run deploy:all`
-    - Runs: tests -> GAS push -> git push
+    - Runs guarded checks: clean tree + `main` branch + clasp auth + `check:full` -> GAS push -> git push.
 - GitHub CI
     - `.github/workflows/ci.yml` runs `npm test` on every push to `main` and every pull request.
+    - Exposes two enforceable checks for branch protection:
+        - `policy-checks`
+        - `unit-tests`
+
+---
+
+## 📄 Rollback
+
+If a deploy causes bad behavior, roll back quickly:
+
+1. Inspect tags/commits and pick the last known good revision.
+2. Check out that revision locally.
+3. Push that revision to Apps Script.
+4. Push/re-tag in GitHub if needed.
+
+Example commands:
+
+```powershell
+git log --oneline -n 20
+git checkout <good_commit_or_tag>
+npm run gas:push
+git checkout main
+```
+
+If you want to preserve rollback points, create tags before deploys:
+
+```powershell
+git tag v2026.03.06-1
+git push origin v2026.03.06-1
+```
 
 ---
 

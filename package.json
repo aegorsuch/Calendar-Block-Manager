@@ -5,13 +5,14 @@
   "description": "Local workflow scripts for Google Apps Script and Git sync",
   "scripts": {
     "test": "node --test tests/*.test.js",
-    "check:full": "npm test",
+    "check:policy": "node scripts/check-policy.js",
+    "check:full": "npm run check:policy && npm test",
     "setup:hooks": "git config core.hooksPath .githooks",
     "gas:status": "clasp status",
     "gas:pull": "clasp pull",
     "gas:push": "clasp push",
     "gas:open": "clasp open-script",
-    "deploy:all": "npm run check:full && npm run gas:push && git push",
+    "deploy:all": "node scripts/deploy-all.js",
     "git:status": "git status",
     "git:sync": "git add . && git commit -m \"chore: sync local changes\" && git push"
   }

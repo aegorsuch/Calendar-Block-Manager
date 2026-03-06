@@ -41,12 +41,13 @@ npm run git:sync
 
 ## NPM Helper Commands
 - `npm run setup:hooks` - Configure git to use repo-managed hooks in `.githooks`
-- `npm run check:full` - Run local full checks (currently `npm test`)
+- `npm run check:full` - Run local full checks (`check:policy` + `npm test`)
+- `npm run check:policy` - Verify required docs/workflow/hook policies
 - `npm run gas:status` - Show clasp-tracked files
 - `npm run gas:pull` - Pull from Apps Script to local
 - `npm run gas:push` - Push local to Apps Script
 - `npm run gas:open` - Open Apps Script project in browser
-- `npm run deploy:all` - Test, push to GAS, then push to GitHub
+- `npm run deploy:all` - Guarded deploy (`main` + clean tree + clasp auth + checks + GAS push + git push)
 - `npm run git:status` - Show git status
 - `npm run git:sync` - Add, commit, and push local changes
 - `npm test` - Run local mock scheduling tests
@@ -59,6 +60,20 @@ npm run setup:hooks
 ```
 
 This enables the repo hook so `git push` is blocked when checks fail.
+
+## Branch Protection Ready Checks
+The CI workflow publishes two checks intended for required-merge rules on `main`:
+- `policy-checks`
+- `unit-tests`
+
+In GitHub repo settings, add a branch protection rule for `main` and require both checks.
+
+## Rollback Playbook
+If a deploy misbehaves:
+1. Find the last good commit: `git log --oneline -n 20`
+2. Checkout it: `git checkout <good_commit_or_tag>`
+3. Re-deploy to Apps Script: `npm run gas:push`
+4. Return to branch tip when done: `git checkout main`
 
 ## Configuration Workflow
 1. In Apps Script editor, run `setDefaultScriptProperties` once.
