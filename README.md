@@ -111,5 +111,15 @@ npm test
 
 ---
 
+## ✅ Stable Daily Ops (5 Lines)
+
+1. `git pull`
+2. `npm run gas:pull`
+3. Make edits, then run `npm test`
+4. `npm run gas:push`
+5. `npm run git:sync`
+
+---
+
 ## 📄 License
 Distributed under the MIT License.
