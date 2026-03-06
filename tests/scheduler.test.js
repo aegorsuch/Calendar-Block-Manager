@@ -116,3 +116,28 @@ test("can disable conflict protection to force move", () => {
   assert.equal(result.moved, 1);
   assert.equal(result.skippedConflict, 0);
 });
+
+test("stops planning when max move limit is reached", () => {
+  const result = planFollowerMoves(
+    DAY + 8 * 60 * 60 * 1000,
+    [
+      {
+        id: "a",
+        startMs: DAY + 10 * 60 * 60 * 1000,
+        endMs: DAY + 10.5 * 60 * 60 * 1000,
+        tags: []
+      },
+      {
+        id: "b",
+        startMs: DAY + 11 * 60 * 60 * 1000,
+        endMs: DAY + 11.5 * 60 * 60 * 1000,
+        tags: []
+      }
+    ],
+    { maxMovesPerRun: 1 }
+  );
+
+  assert.equal(result.moved, 1);
+  assert.equal(result.hitMoveLimit, true);
+  assert.equal(result.skippedMoveLimit, 1);
+});

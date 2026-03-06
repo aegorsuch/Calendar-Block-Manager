@@ -54,6 +54,9 @@ npm run git:sync
 3. Use `CBM_DRY_RUN=true` when validating new routine/tag setups.
 4. Set `CBM_DRY_RUN=false` after logs look correct.
 5. Keep `CBM_PROTECT_EXTERNAL_CONFLICTS=true` unless you explicitly want routine moves to ignore non-routine event overlap.
+6. Keep `CBM_MAX_MOVES_PER_RUN` at a safe value (default `50`) to limit blast radius from bad config.
+7. Use `CBM_ENABLED_ROUTINES` to selectively enable routine keys.
+8. Run `doctor()` after property edits to validate configuration and trigger health.
 
 ## Trigger Options
 - `CalendarBlockManager` - normal runtime (respects `CBM_DRY_RUN` property)
@@ -64,6 +67,7 @@ npm run git:sync
 - `createDryRunTrigger()` - creates minute trigger for `CalendarBlockManagerDryRun`
 - `listManagerTriggers()` - logs/returns trigger metadata for both manager handlers
 - `deleteManagerTriggers()` - deletes manager triggers if you need a clean reset
+- `doctor()` - validates config shape, calendar binding access, routine toggles, and trigger presence
 
 ## Safe Sync Rules
 - Run `npm run gas:pull` before editing if you made script changes in the Apps Script web editor.

@@ -19,11 +19,16 @@ function planFollowerMoves(anchorEndMs, followers, options = {}) {
   const blockers = Array.isArray(options.blockers) ? options.blockers : [];
   const protectExternalConflicts =
     options.protectExternalConflicts === undefined ? true : Boolean(options.protectExternalConflicts);
+  const maxMovesPerRun = Number.isInteger(options.maxMovesPerRun)
+    ? Math.max(1, options.maxMovesPerRun)
+    : Number.POSITIVE_INFINITY;
 
   const ordered = [...followers].sort((a, b) => a.startMs - b.startMs);
   const moves = [];
   let skippedFixed = 0;
   let skippedConflict = 0;
+  let skippedMoveLimit = 0;
+  let hitMoveLimit = false;
   let nextStartMs = anchorEndMs;
 
   for (const follower of ordered) {
@@ -36,10 +41,17 @@ function planFollowerMoves(anchorEndMs, followers, options = {}) {
     const durationMs = follower.endMs - follower.startMs;
     const newStartMs = nextStartMs;
     const newEndMs = newStartMs + durationMs;
+    const needsMove = follower.startMs !== newStartMs;
+
+    if (needsMove && moves.length >= maxMovesPerRun) {
+      skippedMoveLimit += 1;
+      hitMoveLimit = true;
+      break;
+    }
 
     const hasConflict =
       protectExternalConflicts &&
-      follower.startMs !== newStartMs &&
+      needsMove &&
       blockers.some((b) => rangesOverlap(newStartMs, newEndMs, b.startMs, b.endMs));
 
     if (hasConflict) {
@@ -48,7 +60,7 @@ function planFollowerMoves(anchorEndMs, followers, options = {}) {
       continue;
     }
 
-    if (follower.startMs !== newStartMs) {
+    if (needsMove) {
       moves.push({
         id: follower.id,
         fromStartMs: follower.startMs,
@@ -65,7 +77,9 @@ function planFollowerMoves(anchorEndMs, followers, options = {}) {
     moves,
     moved: moves.length,
     skippedFixed,
-    skippedConflict
+    skippedConflict,
+    skippedMoveLimit,
+    hitMoveLimit
   };
 }
 

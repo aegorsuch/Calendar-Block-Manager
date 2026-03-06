@@ -14,9 +14,11 @@ This script creates a physical relationship between an **Anchor** (the engine) a
 * **Multi-Routine Support:** Manage `#am`, `#commute`, and `#pm` routines separately.
 * **Smart Snap:** Automatically removes gaps or overlaps between related events.
 * **Config via Script Properties:** Change routines, skip tags, lookahead, and calendar target without code edits.
+* **Per-Routine Enable Flags:** Turn individual routines on/off without touching code.
 * **Dry-Run Mode:** Preview planned changes in logs before applying them.
 * **Fixed Event Protection:** Keep events tagged `#fixed` in place.
 * **Conflict Protection:** Avoid moving routine links into times occupied by non-routine events.
+* **Safety Brake:** Stop after a configured number of moves in a single run.
 * **Manual Color Control:** The script does not touch event colors, allowing you to use your own color-coding system manually.
 * **Flexible Tagging:** Works in both **Titles** and **Descriptions**.
 
@@ -48,6 +50,9 @@ Instead of manually configuring triggers, run these from the Apps Script editor:
 - `createDryRunTrigger()`
 - `listManagerTriggers()`
 - `deleteManagerTriggers()`
+- `doctor()`
+
+`doctor()` validates key script properties and trigger state, then logs a health report with warnings/errors.
 
 ---
 
@@ -80,15 +85,17 @@ You can configure behavior in **Apps Script > Project Settings > Script properti
 | `CBM_DRY_RUN` | `false` | `true` logs planned moves without applying. |
 | `CBM_SKIP_TAGS` | `#fixed` | Comma-separated tags that should not be moved. |
 | `CBM_PROTECT_EXTERNAL_CONFLICTS` | `true` | If `true`, skips moves that would overlap non-routine events. |
-| `CBM_ROUTINES_JSON` | default routines | JSON array of `{ "anchorTag": "#...", "linkTag": "#..." }`. |
+| `CBM_MAX_MOVES_PER_RUN` | `50` | Safety cap for planned/applied moves per execution (`1` to `1000`). |
+| `CBM_ENABLED_ROUTINES` | `am,commute,pm` | Comma-separated routine keys that are currently active. |
+| `CBM_ROUTINES_JSON` | default routines | JSON array of `{ "key": "...", "anchorTag": "#...", "linkTag": "#..." }`. |
 
 Example `CBM_ROUTINES_JSON` value:
 
 ```json
 [
-    { "anchorTag": "#amanchor", "linkTag": "#amlink" },
-    { "anchorTag": "#commuteanchor", "linkTag": "#commutelink" },
-    { "anchorTag": "#pmanchor", "linkTag": "#pmlink" }
+    { "key": "am", "anchorTag": "#amanchor", "linkTag": "#amlink" },
+    { "key": "commute", "anchorTag": "#commuteanchor", "linkTag": "#commutelink" },
+    { "key": "pm", "anchorTag": "#pmanchor", "linkTag": "#pmlink" }
 ]
 ```
 
