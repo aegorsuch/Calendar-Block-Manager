@@ -18,7 +18,6 @@ jobs:
           node-version: 20
       - name: Run policy checks
         run: npm run check:policy
-              run: npm run check:policy
 
   unit-tests:
     runs-on: ubuntu-latest
