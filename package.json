@@ -1,0 +1,14 @@
+{
+  "name": "calendar-block-manager",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Local workflow scripts for Google Apps Script and Git sync",
+  "scripts": {
+    "gas:status": "clasp status",
+    "gas:pull": "clasp pull",
+    "gas:push": "clasp push",
+    "gas:open": "clasp open",
+    "git:status": "git status",
+    "git:sync": "git add . && git commit -m \"chore: sync local changes\" && git push"
+  }
+}
