@@ -46,6 +46,13 @@ npm run git:sync
 - `npm run gas:open` - Open Apps Script project in browser
 - `npm run git:status` - Show git status
 - `npm run git:sync` - Add, commit, and push local changes
+- `npm test` - Run local mock scheduling tests
+
+## Configuration Workflow
+1. In Apps Script editor, run `setDefaultScriptProperties` once.
+2. Open Project Settings and adjust any `CBM_*` script properties.
+3. Use `CBM_DRY_RUN=true` when validating new routine/tag setups.
+4. Set `CBM_DRY_RUN=false` after logs look correct.
 
 ## Safe Sync Rules
 - Run `npm run gas:pull` before editing if you made script changes in the Apps Script web editor.

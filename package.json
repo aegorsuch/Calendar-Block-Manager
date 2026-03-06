@@ -4,6 +4,7 @@
   "private": true,
   "description": "Local workflow scripts for Google Apps Script and Git sync",
   "scripts": {
+    "test": "node --test tests/*.test.js",
     "gas:status": "clasp status",
     "gas:pull": "clasp pull",
     "gas:push": "clasp push",
