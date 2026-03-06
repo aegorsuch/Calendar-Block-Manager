@@ -22,10 +22,10 @@ This script creates a physical relationship between an **Anchor** (the engine) a
 
 1. Open [Google Apps Script](https://script.google.com/).
 2. Paste the code into `Code.gs`.
-3. Ensure the function is named `calendarBlockManager`.
+3. Ensure the function is named `CalendarBlockManager`.
 4. Click the **Triggers** (Clock icon) on the left sidebar.
 5. Add a new trigger:
-    * **Function:** `calendarBlockManager`
+    * **Function:** `CalendarBlockManager`
     * **Source:** `Time-driven`
     * **Type:** `Minutes timer`
     * **Interval:** `Every minute`

@@ -1,60 +1,92 @@
 /**
  * Calendar Block Manager
- * Status: Final stable version (Positioning only).
- * Logic: Slides "link" events to touch "anchor" events. No color changes.
+ * Train logic: for each tagged anchor, snap same-day tagged link events behind it.
  */
 function CalendarBlockManager() {
-  const calendar = CalendarApp.getDefaultCalendar();
-  const startSearch = new Date();
-  startSearch.setHours(0,0,0,0); 
-  
-  const endSearch = new Date();
-  endSearch.setDate(startSearch.getDate() + 7); 
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(30000)) {
+    Logger.log("Skipped run: another trigger execution is still active.");
+    return;
+  }
 
-  const routines = [ 
-    { anchorTag: '#amanchor', linkTag: '#amlink' },
-    { anchorTag: '#commuteanchor', linkTag: '#commutelink' },
-    { anchorTag: '#pmanchor', linkTag: '#pmlink' },
-  ];
+  try {
+    const calendar = CalendarApp.getDefaultCalendar();
+    const timeZone = Session.getScriptTimeZone();
+    const startSearch = new Date();
+    startSearch.setHours(0, 0, 0, 0);
 
-  const allEvents = calendar.getEvents(startSearch, endSearch);
+    const endSearch = new Date(startSearch.getTime());
+    endSearch.setDate(endSearch.getDate() + 7);
 
-  routines.forEach(routine => {
-    const anchors = allEvents.filter(e => {
-      const content = (e.getTitle() + " " + e.getDescription()).toLowerCase();
-      return content.includes(routine.anchorTag.toLowerCase());
-    });
+    const routines = [
+      { anchorTag: "#amanchor", linkTag: "#amlink" },
+      { anchorTag: "#commuteanchor", linkTag: "#commutelink" },
+      { anchorTag: "#pmanchor", linkTag: "#pmlink" }
+    ];
 
-    anchors.forEach(anchor => {
-      const anchorDate = anchor.getStartTime().toDateString();
-      
-      let followers = allEvents.filter(f => {
-        const content = (f.getTitle() + " " + f.getDescription()).toLowerCase();
-        return content.includes(routine.linkTag.toLowerCase()) && 
-               f.getStartTime().toDateString() === anchorDate &&
-               f.getId() !== anchor.getId();
-      });
+    const allEvents = calendar.getEvents(startSearch, endSearch);
+    const eventsByDay = groupEventsByDay(allEvents, timeZone);
 
-      if (followers.length > 0) {
-        // Sort by start time to maintain the "Train" order
-        followers.sort((a, b) => a.getStartTime() - b.getStartTime());
-        
-        let nextStartTime = anchor.getEndTime();
+    routines.forEach(function (routine) {
+      allEvents
+        .filter(function (event) {
+          return eventHasTag(event, routine.anchorTag);
+        })
+        .forEach(function (anchor) {
+          const dayKey = getDayKey(anchor.getStartTime(), timeZone);
+          const followers = (eventsByDay[dayKey] || [])
+            .filter(function (event) {
+              return event.getId() !== anchor.getId() && eventHasTag(event, routine.linkTag);
+            })
+            .sort(function (a, b) {
+              return a.getStartTime().getTime() - b.getStartTime().getTime();
+            });
 
-        followers.forEach(event => {
-          const duration = event.getEndTime() - event.getStartTime();
-          const newEnd = new Date(nextStartTime.getTime() + duration);
-          
-          // Only move if the time has actually changed to stay within quota
-          if (event.getStartTime().getTime() !== nextStartTime.getTime()) {
-            event.setTime(nextStartTime, newEnd);
+          if (followers.length === 0) {
+            return;
           }
-          
-          nextStartTime = newEnd; 
+
+          let nextStartTime = anchor.getEndTime();
+          followers.forEach(function (event) {
+            const durationMs = event.getEndTime().getTime() - event.getStartTime().getTime();
+            const newEnd = new Date(nextStartTime.getTime() + durationMs);
+
+            if (event.getStartTime().getTime() !== nextStartTime.getTime()) {
+              event.setTime(nextStartTime, newEnd);
+            }
+            nextStartTime = newEnd;
+          });
+
+          Logger.log("Synced " + dayKey + " for " + routine.anchorTag);
         });
-        
-        Logger.log(`Synced ${anchorDate} for ${routine.anchorTag}`);
-      }
     });
+  } catch (error) {
+    Logger.log("CalendarBlockManager failed: " + error);
+    throw error;
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function eventHasTag(event, tag) {
+  const title = event.getTitle() || "";
+  const description = event.getDescription() || "";
+  const content = (title + " " + description).toLowerCase();
+  return content.indexOf(tag.toLowerCase()) !== -1;
+}
+
+function groupEventsByDay(events, timeZone) {
+  const grouped = {};
+  events.forEach(function (event) {
+    const dayKey = getDayKey(event.getStartTime(), timeZone);
+    if (!grouped[dayKey]) {
+      grouped[dayKey] = [];
+    }
+    grouped[dayKey].push(event);
   });
+  return grouped;
+}
+
+function getDayKey(date, timeZone) {
+  return Utilities.formatDate(date, timeZone, "yyyy-MM-dd");
 }
