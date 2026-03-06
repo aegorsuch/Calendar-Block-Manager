@@ -7,6 +7,7 @@ const DEFAULT_ROUTINES = [
 const DEFAULT_LOOKAHEAD_DAYS = 7;
 const DEFAULT_SKIP_TAGS = ["#fixed"];
 const DEFAULT_TRIGGER_MINUTES = 1;
+const DEFAULT_PROTECT_EXTERNAL_CONFLICTS = true;
 
 /**
  * Calendar Block Manager
@@ -52,7 +53,8 @@ function executeCalendarBlockManager(options) {
       anchors: 0,
       followers: 0,
       moved: 0,
-      skippedFixed: 0
+      skippedFixed: 0,
+      skippedConflict: 0
     };
 
     config.routines.forEach(function (routine) {
@@ -90,6 +92,32 @@ function executeCalendarBlockManager(options) {
             const durationMs = event.getEndTime().getTime() - event.getStartTime().getTime();
             const newEnd = new Date(nextStartTime.getTime() + durationMs);
             const needsMove = event.getStartTime().getTime() !== nextStartTime.getTime();
+            const hasConflict =
+              needsMove &&
+              config.protectExternalConflicts &&
+              overlapsWithNonRoutineEvent(
+                eventsByDay[dayKey] || [],
+                event,
+                nextStartTime,
+                newEnd,
+                config.routines
+              );
+
+            if (hasConflict) {
+              stats.skippedConflict += 1;
+              Logger.log(
+                "[SKIP_CONFLICT] " +
+                  event.getTitle() +
+                  " remains at " +
+                  event.getStartTime().toISOString() +
+                  " - " +
+                  event.getEndTime().toISOString()
+              );
+              if (event.getEndTime().getTime() > nextStartTime.getTime()) {
+                nextStartTime = event.getEndTime();
+              }
+              return;
+            }
 
             if (needsMove) {
               if (config.dryRun) {
@@ -123,6 +151,8 @@ function executeCalendarBlockManager(options) {
         stats.moved +
         ", skippedFixed=" +
         stats.skippedFixed +
+        ", skippedConflict=" +
+        stats.skippedConflict +
         ", dryRun=" +
         config.dryRun
     );
@@ -145,6 +175,7 @@ function setDefaultScriptProperties() {
       CBM_LOOKAHEAD_DAYS: String(DEFAULT_LOOKAHEAD_DAYS),
       CBM_DRY_RUN: "false",
       CBM_SKIP_TAGS: DEFAULT_SKIP_TAGS.join(","),
+      CBM_PROTECT_EXTERNAL_CONFLICTS: String(DEFAULT_PROTECT_EXTERNAL_CONFLICTS),
       CBM_ROUTINES_JSON: JSON.stringify(DEFAULT_ROUTINES)
     },
     false
@@ -242,6 +273,7 @@ function loadConfiguration() {
     calendarId: (props.CBM_CALENDAR_ID || "").trim(),
     lookAheadDays: parseLookAheadDays(props.CBM_LOOKAHEAD_DAYS),
     dryRun: parseBoolean(props.CBM_DRY_RUN),
+    protectExternalConflicts: parseProtectedConflicts(props.CBM_PROTECT_EXTERNAL_CONFLICTS),
     skipTags: parseTagList(props.CBM_SKIP_TAGS, DEFAULT_SKIP_TAGS),
     routines: parseRoutines(props.CBM_ROUTINES_JSON)
   };
@@ -269,6 +301,13 @@ function parseLookAheadDays(value) {
 
 function parseBoolean(value) {
   return String(value || "").toLowerCase() === "true";
+}
+
+function parseProtectedConflicts(value) {
+  if (String(value || "").trim() === "") {
+    return DEFAULT_PROTECT_EXTERNAL_CONFLICTS;
+  }
+  return parseBoolean(value);
 }
 
 function parseTagList(raw, defaultTags) {
@@ -347,6 +386,35 @@ function eventText(event) {
 function extractHashtags(text) {
   const matches = String(text || "").match(/#[a-z0-9_-]+/g);
   return matches ? matches : [];
+}
+
+function overlapsWithNonRoutineEvent(dayEvents, movingEvent, proposedStart, proposedEnd, routines) {
+  return dayEvents.some(function (candidate) {
+    if (candidate.getId() === movingEvent.getId()) {
+      return false;
+    }
+
+    if (isRoutineEvent(candidate, routines)) {
+      return false;
+    }
+
+    return rangesOverlap(
+      proposedStart.getTime(),
+      proposedEnd.getTime(),
+      candidate.getStartTime().getTime(),
+      candidate.getEndTime().getTime()
+    );
+  });
+}
+
+function isRoutineEvent(event, routines) {
+  return routines.some(function (routine) {
+    return eventHasTag(event, routine.anchorTag) || eventHasTag(event, routine.linkTag);
+  });
+}
+
+function rangesOverlap(startA, endA, startB, endB) {
+  return startA < endB && startB < endA;
 }
 
 function groupEventsByDay(events, timeZone) {

@@ -16,6 +16,7 @@ This script creates a physical relationship between an **Anchor** (the engine) a
 * **Config via Script Properties:** Change routines, skip tags, lookahead, and calendar target without code edits.
 * **Dry-Run Mode:** Preview planned changes in logs before applying them.
 * **Fixed Event Protection:** Keep events tagged `#fixed` in place.
+* **Conflict Protection:** Avoid moving routine links into times occupied by non-routine events.
 * **Manual Color Control:** The script does not touch event colors, allowing you to use your own color-coding system manually.
 * **Flexible Tagging:** Works in both **Titles** and **Descriptions**.
 
@@ -78,6 +79,7 @@ You can configure behavior in **Apps Script > Project Settings > Script properti
 | `CBM_LOOKAHEAD_DAYS` | `7` | Number of days scanned ahead (`1` to `30`). |
 | `CBM_DRY_RUN` | `false` | `true` logs planned moves without applying. |
 | `CBM_SKIP_TAGS` | `#fixed` | Comma-separated tags that should not be moved. |
+| `CBM_PROTECT_EXTERNAL_CONFLICTS` | `true` | If `true`, skips moves that would overlap non-routine events. |
 | `CBM_ROUTINES_JSON` | default routines | JSON array of `{ "anchorTag": "#...", "linkTag": "#..." }`. |
 
 Example `CBM_ROUTINES_JSON` value:

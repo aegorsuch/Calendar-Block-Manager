@@ -53,6 +53,7 @@ npm run git:sync
 2. Open Project Settings and adjust any `CBM_*` script properties.
 3. Use `CBM_DRY_RUN=true` when validating new routine/tag setups.
 4. Set `CBM_DRY_RUN=false` after logs look correct.
+5. Keep `CBM_PROTECT_EXTERNAL_CONFLICTS=true` unless you explicitly want routine moves to ignore non-routine event overlap.
 
 ## Trigger Options
 - `CalendarBlockManager` - normal runtime (respects `CBM_DRY_RUN` property)

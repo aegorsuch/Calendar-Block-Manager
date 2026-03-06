@@ -9,13 +9,21 @@ function hasAnyTag(tags, skipTags) {
   return (skipTags || []).map(normalizeTag).some((tag) => set.has(tag));
 }
 
+function rangesOverlap(startA, endA, startB, endB) {
+  return startA < endB && startB < endA;
+}
+
 function planFollowerMoves(anchorEndMs, followers, options = {}) {
   const dryRun = Boolean(options.dryRun);
   const skipTags = options.skipTags || ["#fixed"];
+  const blockers = Array.isArray(options.blockers) ? options.blockers : [];
+  const protectExternalConflicts =
+    options.protectExternalConflicts === undefined ? true : Boolean(options.protectExternalConflicts);
 
   const ordered = [...followers].sort((a, b) => a.startMs - b.startMs);
   const moves = [];
   let skippedFixed = 0;
+  let skippedConflict = 0;
   let nextStartMs = anchorEndMs;
 
   for (const follower of ordered) {
@@ -28,6 +36,17 @@ function planFollowerMoves(anchorEndMs, followers, options = {}) {
     const durationMs = follower.endMs - follower.startMs;
     const newStartMs = nextStartMs;
     const newEndMs = newStartMs + durationMs;
+
+    const hasConflict =
+      protectExternalConflicts &&
+      follower.startMs !== newStartMs &&
+      blockers.some((b) => rangesOverlap(newStartMs, newEndMs, b.startMs, b.endMs));
+
+    if (hasConflict) {
+      skippedConflict += 1;
+      nextStartMs = Math.max(nextStartMs, follower.endMs);
+      continue;
+    }
 
     if (follower.startMs !== newStartMs) {
       moves.push({
@@ -45,7 +64,8 @@ function planFollowerMoves(anchorEndMs, followers, options = {}) {
   return {
     moves,
     moved: moves.length,
-    skippedFixed
+    skippedFixed,
+    skippedConflict
   };
 }
 

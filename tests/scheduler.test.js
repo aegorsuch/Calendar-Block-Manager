@@ -65,3 +65,54 @@ test("dry-run reports planned moves without applying", () => {
   assert.equal(result.moved, 1);
   assert.equal(result.moves[0].applied, false);
 });
+
+test("skips move when proposed slot overlaps external blocker", () => {
+  const result = planFollowerMoves(
+    DAY + 9 * 60 * 60 * 1000,
+    [
+      {
+        id: "focus",
+        startMs: DAY + 12 * 60 * 60 * 1000,
+        endMs: DAY + 13 * 60 * 60 * 1000,
+        tags: []
+      }
+    ],
+    {
+      blockers: [
+        {
+          startMs: DAY + 9.5 * 60 * 60 * 1000,
+          endMs: DAY + 10.5 * 60 * 60 * 1000
+        }
+      ]
+    }
+  );
+
+  assert.equal(result.moved, 0);
+  assert.equal(result.skippedConflict, 1);
+});
+
+test("can disable conflict protection to force move", () => {
+  const result = planFollowerMoves(
+    DAY + 9 * 60 * 60 * 1000,
+    [
+      {
+        id: "focus",
+        startMs: DAY + 12 * 60 * 60 * 1000,
+        endMs: DAY + 13 * 60 * 60 * 1000,
+        tags: []
+      }
+    ],
+    {
+      protectExternalConflicts: false,
+      blockers: [
+        {
+          startMs: DAY + 9.5 * 60 * 60 * 1000,
+          endMs: DAY + 10.5 * 60 * 60 * 1000
+        }
+      ]
+    }
+  );
+
+  assert.equal(result.moved, 1);
+  assert.equal(result.skippedConflict, 0);
+});
