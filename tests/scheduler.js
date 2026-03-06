@@ -84,5 +84,8 @@ function planFollowerMoves(anchorEndMs, followers, options = {}) {
 }
 
 module.exports = {
-  planFollowerMoves
+  planFollowerMoves,
+  normalizeTag,
+  hasAnyTag,
+  rangesOverlap
 };

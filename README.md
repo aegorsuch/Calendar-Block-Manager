@@ -164,5 +164,29 @@ git push origin v2026.03.06-1
 
 ---
 
+## 🩹 Recovery & Rollback Procedures
+
+### Rollback (Undo a Bad Deploy)
+1. Find the last known good commit or tag:
+   - `git log --oneline -n 20`
+2. Check out that revision:
+   - `git checkout <good_commit_or_tag>`
+3. Push to Apps Script:
+   - `npm run gas:push`
+4. Restore main branch:
+   - `git checkout main`
+5. (Optional) Push/tag in GitHub:
+   - `git tag vYYYY.MM.DD-N`
+   - `git push origin vYYYY.MM.DD-N`
+
+### Recovery (Restore from Backup)
+- If you have a backup (tagged or exported code), check out or import that version.
+- For accidental script property changes, restore from a previous backup or re-run `setDefaultScriptProperties`.
+- If calendar events are affected, use Google Calendar’s “Undo” or restore from Google’s event history.
+
+> **Tip:** Tag every deploy for easy rollback. Keep a changelog of script property edits.
+
+---
+
 ## 📄 License
 Distributed under the MIT License.

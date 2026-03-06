@@ -1,6 +1,47 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const { planFollowerMoves } = require("./scheduler");
+const { planFollowerMoves, normalizeTag, hasAnyTag, rangesOverlap } = require("../src/scheduler");
+
+test("normalizeTag trims, lowercases, and adds #", () => {
+  assert.equal(normalizeTag("  FIXED  "), "#fixed");
+  assert.equal(normalizeTag("#Fixed"), "#fixed");
+  assert.equal(normalizeTag(""), "");
+  assert.equal(normalizeTag(null), "");
+});
+
+test("hasAnyTag detects tag presence", () => {
+  assert.equal(hasAnyTag(["#fixed", "#other"], ["fixed"]), true);
+  assert.equal(hasAnyTag(["#fixed"], ["other"]), false);
+  assert.equal(hasAnyTag([], ["fixed"]), false);
+});
+
+test("rangesOverlap returns true for overlapping, false for non-overlapping", () => {
+  assert.equal(rangesOverlap(0, 10, 5, 15), true);
+  assert.equal(rangesOverlap(0, 5, 5, 10), false);
+  assert.equal(rangesOverlap(0, 10, 10, 20), false);
+  assert.equal(rangesOverlap(0, 10, 1, 2), true);
+});
+
+test("planFollowerMoves handles empty followers", () => {
+  const result = planFollowerMoves(DAY, []);
+  assert.equal(result.moved, 0);
+  assert.deepEqual(result.moves, []);
+});
+
+test("planFollowerMoves handles invalid tags gracefully", () => {
+  const result = planFollowerMoves(DAY, [
+    { id: "bad", startMs: DAY + 1, endMs: DAY + 2, tags: [null, " "] }
+  ]);
+  assert.equal(result.moved, 1);
+});
+
+test("planFollowerMoves handles overlapping ranges", () => {
+  const result = planFollowerMoves(DAY, [
+    { id: "a", startMs: DAY + 1, endMs: DAY + 3, tags: [] },
+    { id: "b", startMs: DAY + 2, endMs: DAY + 4, tags: [] }
+  ]);
+  assert.equal(result.moved, 1);
+});
 
 const DAY = Date.UTC(2026, 2, 6);
 
