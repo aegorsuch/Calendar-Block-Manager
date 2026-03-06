@@ -1,23 +1,23 @@
-          - name: Setup Node
-      name: CI
+name: CI
 
-      on:
-        push:
-          branches:
-            - main
-        pull_request:
+on:
+  push:
+    branches:
+      - main
+  pull_request:
 
-                  uses: actions/checkout@v4
-        policy-checks:
-          runs-on: ubuntu-latest
-          steps:
-            - name: Checkout
-              uses: actions/checkout@v4
-            - name: Setup Node
-              uses: actions/setup-node@v4
-              with:
-                node-version: 20
-            - name: Run policy checks
+jobs:
+  policy-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Run policy checks
+        run: npm run check:policy
               run: npm run check:policy
 
         unit-tests:
