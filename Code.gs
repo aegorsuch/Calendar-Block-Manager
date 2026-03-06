@@ -6,6 +6,7 @@ const DEFAULT_ROUTINES = [
 
 const DEFAULT_LOOKAHEAD_DAYS = 7;
 const DEFAULT_SKIP_TAGS = ["#fixed"];
+const DEFAULT_TRIGGER_MINUTES = 1;
 
 /**
  * Calendar Block Manager
@@ -149,6 +150,90 @@ function setDefaultScriptProperties() {
     false
   );
   Logger.log("Default Calendar Block Manager properties saved.");
+}
+
+/**
+ * Creates a minute trigger for the normal runtime function.
+ */
+function createProductionTrigger() {
+  return createManagerTrigger_("CalendarBlockManager", DEFAULT_TRIGGER_MINUTES);
+}
+
+/**
+ * Creates a minute trigger for the always-safe dry-run function.
+ */
+function createDryRunTrigger() {
+  return createManagerTrigger_("CalendarBlockManagerDryRun", DEFAULT_TRIGGER_MINUTES);
+}
+
+/**
+ * Deletes all triggers owned by this project for manager runtime functions.
+ */
+function deleteManagerTriggers() {
+  const handlerNames = {
+    CalendarBlockManager: true,
+    CalendarBlockManagerDryRun: true
+  };
+
+  const triggers = ScriptApp.getProjectTriggers();
+  let deleted = 0;
+
+  triggers.forEach(function (trigger) {
+    if (handlerNames[trigger.getHandlerFunction()]) {
+      ScriptApp.deleteTrigger(trigger);
+      deleted += 1;
+    }
+  });
+
+  Logger.log("Deleted " + deleted + " Calendar Block Manager trigger(s).");
+  return deleted;
+}
+
+/**
+ * Logs and returns trigger metadata for manager runtime functions.
+ */
+function listManagerTriggers() {
+  const handlerNames = {
+    CalendarBlockManager: true,
+    CalendarBlockManagerDryRun: true
+  };
+
+  const result = ScriptApp.getProjectTriggers()
+    .filter(function (trigger) {
+      return handlerNames[trigger.getHandlerFunction()];
+    })
+    .map(function (trigger) {
+      return {
+        id: trigger.getUniqueId(),
+        handler: trigger.getHandlerFunction(),
+        source: String(trigger.getTriggerSource()),
+        eventType: String(trigger.getEventType())
+      };
+    });
+
+  Logger.log("Calendar Block Manager triggers: " + JSON.stringify(result));
+  return result;
+}
+
+function createManagerTrigger_(handlerFunction, everyMinutes) {
+  const existing = ScriptApp.getProjectTriggers().filter(function (trigger) {
+    return trigger.getHandlerFunction() === handlerFunction;
+  });
+
+  if (existing.length > 0) {
+    Logger.log(
+      "Trigger already exists for " +
+        handlerFunction +
+        ". Count=" +
+        existing.length +
+        ". Skipping create."
+    );
+    return existing.length;
+  }
+
+  ScriptApp.newTrigger(handlerFunction).timeBased().everyMinutes(everyMinutes).create();
+  Logger.log("Created " + handlerFunction + " trigger (every " + everyMinutes + " minute[s]).");
+  return 1;
 }
 
 function loadConfiguration() {

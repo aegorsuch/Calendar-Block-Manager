@@ -58,6 +58,12 @@ npm run git:sync
 - `CalendarBlockManager` - normal runtime (respects `CBM_DRY_RUN` property)
 - `CalendarBlockManagerDryRun` - always preview mode (ignores and overrides property to dry-run)
 
+## Trigger Management Helpers
+- `createProductionTrigger()` - creates minute trigger for `CalendarBlockManager`
+- `createDryRunTrigger()` - creates minute trigger for `CalendarBlockManagerDryRun`
+- `listManagerTriggers()` - logs/returns trigger metadata for both manager handlers
+- `deleteManagerTriggers()` - deletes manager triggers if you need a clean reset
+
 ## Safe Sync Rules
 - Run `npm run gas:pull` before editing if you made script changes in the Apps Script web editor.
 - Run `git pull` before `npm run git:sync` when collaborating.

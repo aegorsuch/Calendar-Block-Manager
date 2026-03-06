@@ -39,6 +39,15 @@ This script creates a physical relationship between an **Anchor** (the engine) a
 Use `CalendarBlockManagerDryRun` as a separate trigger function when you want a permanent preview-only schedule check.
 This function always logs planned moves and never applies event time changes.
 
+### Trigger Helper Functions
+
+Instead of manually configuring triggers, run these from the Apps Script editor:
+
+- `createProductionTrigger()`
+- `createDryRunTrigger()`
+- `listManagerTriggers()`
+- `deleteManagerTriggers()`
+
 ---
 
 ## 📋 How to Use
